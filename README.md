@@ -2,7 +2,7 @@
 
 A photo and video viewer for Android TV that lets you ask questions about your photos. The answers come from [Gemma](https://ai.google.dev/gemma) running on a computer in your home, so your photos never leave the house.
 
-![Memories start screen: choose the USB drive, internal storage or the Android media library](screenshots/home.png)
+![Memories start screen](screenshots/home.png)
 
 ## Features
 
