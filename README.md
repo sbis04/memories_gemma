@@ -2,6 +2,8 @@
 
 A photo and video viewer for Android TV that lets you ask questions about your photos. The answers come from [Gemma](https://ai.google.dev/gemma) running on a computer in your home, so your photos never leave the house.
 
+![Memories start screen: choose the USB drive, internal storage or the Android media library](screenshots/home.png)
+
 ## Features
 
 - **Made for the remote.** Plug in your photo drive and the app opens by itself. Browse folders as a grid or list and pin the ones you use most.
@@ -9,6 +11,17 @@ A photo and video viewer for Android TV that lets you ask questions about your p
 - **4K, HDR and Dolby Vision video** through the TV's own decoder.
 - **Date and place** on every photo, read from its GPS data.
 - **Ask Gemma.** Press Down on a photo and ask about it by typing or with the remote's mic. Zoom in first to ask about one part. The answer streams in and the TV reads it aloud.
+
+<table>
+  <tr>
+    <td><img src="screenshots/gallery.png" alt="A folder of trip videos in the gallery grid"></td>
+    <td><img src="screenshots/folder-actions.png" alt="Folder menu with Pin to top, Rename and Delete"></td>
+  </tr>
+  <tr>
+    <td align="center">Photos and videos laid out to fill the screen</td>
+    <td align="center">Pin, rename or delete a folder from the remote</td>
+  </tr>
+</table>
 
 ## Setting up Gemma
 
@@ -22,7 +35,18 @@ OLLAMA_HOST=0.0.0.0 ollama serve   # lets the TV reach it over the network
 
 Then on the TV go to **Settings > Gemma > Gemma server** and enter the computer's IP address. No API key is needed and nothing goes to the cloud.
 
-The default model `gemma4:e2b` answers in about 3 seconds on an M3 Max. You can switch to `gemma4` for slightly better wording under **Settings > Gemma > Model**.
+The default model `gemma4:e2b` answers in about 3 seconds on an M3 Max. You can switch to `gemma4` for slightly better wording under **Settings > Gemma > Model**. The voice that reads answers aloud can be picked there too.
+
+<table>
+  <tr>
+    <td><img src="screenshots/answer-voice.png" alt="Picking the voice that reads Gemma's answers"></td>
+    <td><img src="screenshots/settings.png" alt="Appearance settings: theme, thumbnail size and captions"></td>
+  </tr>
+  <tr>
+    <td align="center">Choosing the voice for Gemma's answers</td>
+    <td align="center">Theme, thumbnail size and captions</td>
+  </tr>
+</table>
 
 ## Remote controls
 
