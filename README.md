@@ -12,7 +12,7 @@ A photo and video viewer for Android TV that lets you ask questions about your p
 - **Date and place** on every photo, read from its GPS data.
 - **Ask Gemma.** Press Down on a photo and ask about it by typing or with the remote's mic. Zoom in first to ask about one part. The answer streams in and the TV reads it aloud.
 
-![Ask Gemma: asking "what is the tower on the left called" about a zoomed-in Shanghai photo, and Gemma answering that it's the Oriental Pearl Tower](screenshots/ask-gemma.png)
+https://github.com/user-attachments/assets/17e8c310-6be0-4e88-b9f9-8662241520d1
 
 <table>
   <tr>
