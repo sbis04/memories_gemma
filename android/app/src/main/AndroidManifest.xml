@@ -1,0 +1,86 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Reading photos/videos from internal & USB storage. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <!-- Broad access so arbitrary folders (e.g. a USB drive) can be browsed. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <!-- Read un-redacted GPS from photos (for the location caption). -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
+    <!-- Network access for "Ask Gemini" (Flutter's template only grants it
+         in debug/profile builds, so release builds couldn't connect). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Lets the app find the text-to-speech engine (Android 11+ package
+         visibility) to read Gemini's answers aloud. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <!-- This is a TV-first app: works without a touchscreen and supports the
+         leanback (D-pad) launcher. -->
+    <uses-feature android:name="android.software.leanback" android:required="false"/>
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
+
+    <application
+        android:label="Memories"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:banner="@drawable/tv_banner">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Specifies an Android theme to apply to this Activity as soon as
+                 the Android process has started. This theme is visible to the user
+                 while the Flutter UI initializes. After that, this theme continues
+                 to determine the Window background behind the Flutter UI. -->
+            <meta-data
+              android:name="io.flutter.embedding.android.NormalTheme"
+              android:resource="@style/NormalTheme"
+              />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <!-- Show on the Android TV / Google TV home screen. -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+            </intent-filter>
+            <!-- Offer to open Memories when the photo SSD is plugged in (see
+                 res/xml/usb_device_filter.xml). -->
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/usb_device_filter"/>
+        </activity>
+        <!-- Older Android TV GPUs (e.g. Bravia Mali) have poor Vulkan support;
+             use the Skia/GL renderer to avoid gralloc format errors. -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+        <!-- Don't delete the meta-data below.
+             This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+    <!-- Required to query activities that can process text, see:
+         https://developer.android.com/training/package-visibility and
+         https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.
+
+         In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <data android:mimeType="text/plain"/>
+        </intent>
+    </queries>
+</manifest>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The photo SSD: SanDisk (0x0781) Extreme Pro portable SSD, shown by
+         Android as "Extreme Pro 55AF" (product 0x55AF). Plugging it in offers
+         to open Memories. -->
+    <usb-device vendor-id="1921" product-id="21935" />
+</resources>
