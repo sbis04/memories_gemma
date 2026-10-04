@@ -36,7 +36,8 @@ class SettingsController extends ChangeNotifier {
   static const _kFolderCounts = 'folderMediaCounts';
   static const _kListView = 'listView';
   static const _kPinned = 'pinnedFolders';
-  static const _kGeminiKey = 'geminiApiKey';
+  static const _kGemmaServer = 'gemmaServer';
+  static const _kGemmaModel = 'gemmaModel';
   static const _kReadAloud = 'readAnswersAloud';
   static const _kAnswerVoice = 'answerVoice'; // "name|locale"
 
@@ -62,7 +63,8 @@ class SettingsController extends ChangeNotifier {
   Map<String, int> _folderCounts = {};
   bool _listView = false;
   List<String> _pinned = [];
-  String? _geminiApiKey;
+  String? _gemmaServer;
+  String _gemmaModel = defaultGemmaModel;
   bool _readAloud = true;
   String? _answerVoice;
 
@@ -104,22 +106,48 @@ class SettingsController extends ChangeNotifier {
   double get listRowHeight =>
       const [52.0, 60.0, 70.0, 84.0, 100.0, 120.0, 144.0][_gridZoom];
 
-  /// Gemini API key (from aistudio.google.com) for asking about photos.
-  /// Stored only on this device.
-  String? get geminiApiKey => _geminiApiKey;
+  /// The Ollama server running Gemma on the home network, as a base URL
+  /// (e.g. http://192.168.1.20:11434), or null if not set up yet.
+  String? get gemmaServer => _gemmaServer;
 
-  Future<void> setGeminiApiKey(String? key) async {
-    final k = key?.trim();
-    _geminiApiKey = (k == null || k.isEmpty) ? null : k;
-    if (_geminiApiKey == null) {
-      await _prefs.remove(_kGeminiKey);
+  /// Accepts a bare host or IP ("192.168.1.20", "mac.local") and fills in
+  /// Ollama's scheme and port.
+  Future<void> setGemmaServer(String? address) async {
+    var a = address?.trim() ?? '';
+    while (a.endsWith('/')) {
+      a = a.substring(0, a.length - 1);
+    }
+    if (a.isNotEmpty) {
+      if (!a.contains('://')) a = 'http://$a';
+      final uri = Uri.tryParse(a);
+      if (uri != null && uri.host.isNotEmpty && !uri.hasPort) {
+        a = uri.replace(port: 11434).toString();
+      }
+    }
+    _gemmaServer = a.isEmpty ? null : a;
+    if (_gemmaServer == null) {
+      await _prefs.remove(_kGemmaServer);
     } else {
-      await _prefs.setString(_kGeminiKey, _geminiApiKey!);
+      await _prefs.setString(_kGemmaServer, _gemmaServer!);
     }
     notifyListeners();
   }
 
-  /// Read Gemini's answers aloud (Android text-to-speech).
+  /// Gemma 4's smallest (E2B) build: answers about a photo in ~3 s on a
+  /// laptop. gemma4 (E4B) words things a little better but takes ~5 s.
+  static const defaultGemmaModel = 'gemma4:e2b';
+
+  /// Ollama model tag to ask (e.g. gemma4, gemma4:26b).
+  String get gemmaModel => _gemmaModel;
+
+  Future<void> setGemmaModel(String? model) async {
+    final m = model?.trim() ?? '';
+    _gemmaModel = m.isEmpty ? defaultGemmaModel : m;
+    await _prefs.setString(_kGemmaModel, _gemmaModel);
+    notifyListeners();
+  }
+
+  /// Read Gemma's answers aloud (Android text-to-speech).
   bool get readAloud => _readAloud;
 
   Future<void> setReadAloud(bool v) async {
@@ -175,7 +203,8 @@ class SettingsController extends ChangeNotifier {
     _slideshowLastItem = _prefs.getString(_kSlideLastItem);
     _listView = _prefs.getBool(_kListView) ?? false;
     _pinned = _prefs.getStringList(_kPinned) ?? [];
-    _geminiApiKey = _prefs.getString(_kGeminiKey);
+    _gemmaServer = _prefs.getString(_kGemmaServer);
+    _gemmaModel = _prefs.getString(_kGemmaModel) ?? defaultGemmaModel;
     _readAloud = _prefs.getBool(_kReadAloud) ?? true;
     _answerVoice = _prefs.getString(_kAnswerVoice);
     final countsRaw = _prefs.getString(_kFolderCounts);

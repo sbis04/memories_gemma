@@ -237,7 +237,7 @@ class _ViewerScreenState extends State<ViewerScreen> {
         }
         return KeyEventResult.handled;
       case LogicalKeyboardKey.arrowDown:
-        // Down asks Gemini (zoomed: pan down first, ask at the bottom edge).
+        // Down asks Gemma (zoomed: pan down first, ask at the bottom edge).
         if (!_zoomed || !_zoomFor(_index).pan(const Offset(0, -1))) {
           unawaited(_ask());
         }
@@ -249,7 +249,7 @@ class _ViewerScreenState extends State<ViewerScreen> {
     return KeyEventResult.ignored;
   }
 
-  /// Ask Gemini about the current item — what's zoomed in on, if zoomed.
+  /// Ask Gemma about the current item — what's zoomed in on, if zoomed.
   Future<void> _ask() async {
     _hideTimer?.cancel();
     final entry = _current;
@@ -597,7 +597,10 @@ class _TopPillState extends State<_TopPill> {
                 height: 38,
                 padding: const EdgeInsets.symmetric(horizontal: 14),
                 decoration: BoxDecoration(
-                  color: active ? Colors.white : Colors.transparent,
+                  // Dark when idle so the label reads over bright photos.
+                  color: active
+                      ? Colors.white
+                      : Colors.black.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(19),
                   border: Border.all(
                       color: Colors.white.withValues(alpha: active ? 1 : 0.4)),
@@ -638,7 +641,7 @@ class _ImagePage extends StatefulWidget {
   final bool active;
   final ValueListenable<(int, _ViewerAction)> command;
 
-  /// Owned by the viewer (so it can tell Gemini what's zoomed in on).
+  /// Owned by the viewer (so it can tell Gemma what's zoomed in on).
   final ZoomController zoom;
   final VoidCallback onTap;
   final ValueChanged<bool>? onZoomChanged;

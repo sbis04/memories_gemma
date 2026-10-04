@@ -63,7 +63,7 @@ class ZoomController extends ChangeNotifier {
   static const _full = Rect.fromLTRB(0, 0, 1, 1);
 
   /// The part of the image currently on screen, in normalized image
-  /// coordinates (0–1); the whole image when not zoomed. Used to show Gemini
+  /// coordinates (0–1); the whole image when not zoomed. Used to show Gemma
   /// what the viewer zoomed in on.
   Rect get visibleRegion {
     final img = _imageSize;

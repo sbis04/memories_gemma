@@ -176,23 +176,31 @@ class SettingsScreen extends StatelessWidget {
                             value: s.slideshowShuffle,
                             onChanged: s.setSlideshowShuffle),
                       ),
-                      _SectionHeader('Gemini'),
+                      _SectionHeader('Gemma'),
                       _SettingTile(
-                        title: 'Gemini API key',
-                        subtitle: s.geminiApiKey == null
-                            ? 'Needed to ask about photos — get one free at '
-                                'aistudio.google.com'
-                            : 'Set (…${_tail(s.geminiApiKey!)}) — stored only '
-                                'on this TV',
+                        title: 'Gemma server',
+                        subtitle: s.gemmaServer == null
+                            ? 'A computer at home running Ollama — photos '
+                                'stay on your network'
+                            : s.gemmaServer!,
                         trailing: IconFocusButton(
-                          icon: LucideIcons.keyRound,
-                          label: s.geminiApiKey == null ? 'Add' : 'Change',
-                          onPressed: () => _editGeminiKey(context),
+                          icon: LucideIcons.server,
+                          label: s.gemmaServer == null ? 'Add' : 'Change',
+                          onPressed: () => _editGemmaServer(context),
+                        ),
+                      ),
+                      _SettingTile(
+                        title: 'Model',
+                        subtitle: s.gemmaModel,
+                        trailing: IconFocusButton(
+                          icon: LucideIcons.cpu,
+                          label: 'Change',
+                          onPressed: () => _editGemmaModel(context),
                         ),
                       ),
                       _SettingTile(
                         title: 'Read answers aloud',
-                        subtitle: 'Speak Gemini’s answers with the TV voice',
+                        subtitle: 'Speak Gemma’s answers with the TV voice',
                         trailing: _Toggle(
                             value: s.readAloud, onChanged: s.setReadAloud),
                       ),
@@ -222,19 +230,27 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  static String _tail(String key) =>
-      key.length <= 4 ? key : key.substring(key.length - 4);
-
-  Future<void> _editGeminiKey(BuildContext context) async {
+  Future<void> _editGemmaServer(BuildContext context) async {
     final settings = SettingsController.instance;
-    final key = await showTextInputDialog(
+    final address = await showTextInputDialog(
       context,
-      title: 'Gemini API key',
-      initial: settings.geminiApiKey ?? '',
-      hint: 'Paste or type your key',
+      title: 'Gemma server',
+      initial: settings.gemmaServer ?? '',
+      hint: 'IP or name of the computer, e.g. 192.168.1.20',
       allowSlash: true,
     );
-    if (key != null) await settings.setGeminiApiKey(key);
+    if (address != null) await settings.setGemmaServer(address);
+  }
+
+  Future<void> _editGemmaModel(BuildContext context) async {
+    final settings = SettingsController.instance;
+    final model = await showTextInputDialog(
+      context,
+      title: 'Gemma model',
+      initial: settings.gemmaModel,
+      hint: 'Ollama tag — gemma4:e2b (fastest) or gemma4',
+    );
+    if (model != null) await settings.setGemmaModel(model);
   }
 
   String _zoomLabel(int z) => const [
@@ -465,7 +481,7 @@ class _VoicePickerState extends State<_VoicePicker> {
   List<VoiceOption>? _voices;
   Timer? _preview;
 
-  static const _sample = 'Hi! This is how Gemini’s answers will sound.';
+  static const _sample = 'Hi! This is how Gemma’s answers will sound.';
 
   @override
   void initState() {

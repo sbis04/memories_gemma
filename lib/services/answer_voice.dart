@@ -23,7 +23,7 @@ class VoiceOption {
   }
 }
 
-/// Reads Gemini's answers aloud with Android's built-in text-to-speech (the
+/// Reads Gemma's answers aloud with Android's built-in text-to-speech (the
 /// TV's Google speech engine) — free, nothing extra to install. Uses the
 /// voice chosen in Settings, else the best one for the device language
 /// (preferring Google's higher-quality network voices).

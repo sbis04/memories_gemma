@@ -8,11 +8,11 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     <!-- Read un-redacted GPS from photos (for the location caption). -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION"/>
-    <!-- Network access for "Ask Gemini" (Flutter's template only grants it
+    <!-- Network access for "Ask Gemma" (Flutter's template only grants it
          in debug/profile builds, so release builds couldn't connect). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <!-- Lets the app find the text-to-speech engine (Android 11+ package
-         visibility) to read Gemini's answers aloud. -->
+         visibility) to read Gemma's answers aloud. -->
     <queries>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
@@ -24,11 +24,14 @@
     <uses-feature android:name="android.software.leanback" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
 
+    <!-- usesCleartextTraffic: Gemma runs on a computer on the home network
+         via Ollama, which speaks plain HTTP. -->
     <application
         android:label="Memories"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:banner="@drawable/tv_banner">
+        android:banner="@drawable/tv_banner"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

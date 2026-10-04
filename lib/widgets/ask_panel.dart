@@ -12,14 +12,14 @@ import '../core/transitions.dart';
 import '../models/media_entry.dart';
 import '../screens/settings_screen.dart';
 import '../services/answer_voice.dart';
-import '../services/gemini_service.dart';
+import '../services/gemma_service.dart';
 import '../services/settings_controller.dart';
 import '../services/thumbnail_service.dart';
 import 'focusable.dart';
 
-/// Opens "Ask Gemini" full screen over the blurred photo: a centred question
+/// Opens "Ask Gemma" full screen over the blurred photo: a centred question
 /// field (focused, so the TV keyboard — with its voice button — comes straight
-/// up), a preview of exactly what Gemini is shown (the zoomed-in part, if
+/// up), a preview of exactly what Gemma is shown (the zoomed-in part, if
 /// zoomed), quick suggestions and the conversation. Back closes it.
 /// [focus] is the zoomed-in region (normalized).
 Future<void> showAskPanel(
@@ -30,7 +30,7 @@ Future<void> showAskPanel(
   return showGeneralDialog<void>(
     context: context,
     barrierDismissible: false,
-    barrierLabel: 'Ask Gemini',
+    barrierLabel: 'Ask Gemma',
     barrierColor: Colors.transparent,
     transitionDuration: AppTheme.focusAnim * 2,
     pageBuilder: (context, _, _) => _AskPanel(entry, focus: focus),
@@ -56,7 +56,8 @@ class _Turn {
 }
 
 class _AskPanelState extends State<_AskPanel> {
-  late final GeminiChat _chat = GeminiChat(widget.entry, focus: widget.focus)
+
+  late final GemmaChat _chat = GemmaChat(widget.entry, focus: widget.focus)
     // Get the image(s) ready while the question is being typed/spoken.
     ..prepare().ignore();
   final _text = TextEditingController();
@@ -116,11 +117,21 @@ class _AskPanelState extends State<_AskPanel> {
     _field.unfocus(); // put the keyboard away so the answer is visible
     _scrollToLatest();
     try {
-      turn.answer = await _chat.ask(q);
-    } on GeminiException catch (e) {
-      turn.error = e.message;
+      turn.answer = await _chat.ask(
+        q,
+        // Show the answer as it's written.
+        onPartial: (text) {
+          if (mounted) setState(() => turn.answer = text);
+        },
+      );
+    } on GemmaException catch (e) {
+      turn
+        ..answer = null // drop a half-streamed answer
+        ..error = e.message;
     } catch (e) {
-      turn.error = 'Something went wrong: $e';
+      turn
+        ..answer = null
+        ..error = 'Something went wrong: $e';
     }
     if (!mounted) return;
     setState(() => _busy = false);
@@ -217,7 +228,7 @@ class _AskPanelState extends State<_AskPanel> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: FocusTraversalGroup(
-                      child: GeminiChat.hasKey ? _content() : _noKey(),
+                      child: GemmaChat.hasServer ? _content() : _noServer(),
                     ),
                   ),
                 ),
@@ -239,7 +250,7 @@ class _AskPanelState extends State<_AskPanel> {
           children: [
             Expanded(child: _title()),
             const SizedBox(width: 24),
-            _GeminiInput(entry: widget.entry, focus: widget.focus),
+            _GemmaInput(entry: widget.entry, focus: widget.focus),
           ],
         ),
         const SizedBox(height: 14),
@@ -270,7 +281,7 @@ class _AskPanelState extends State<_AskPanel> {
             const Icon(LucideIcons.sparkles, color: Colors.white, size: 19),
             const SizedBox(width: 9),
             const Text(
-              'Ask Gemini',
+              'Ask Gemma',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 21,
@@ -316,11 +327,18 @@ class _AskPanelState extends State<_AskPanel> {
             event.logicalKey == LogicalKeyboardKey.select ||
             event.logicalKey == LogicalKeyboardKey.enter ||
             event.logicalKey == LogicalKeyboardKey.numpadEnter;
-        // Down (keyboard hidden) moves into the answers to scroll them.
+        // Down (keyboard hidden) moves into the answers to scroll them, or
+        // to the suggestions before anything's been asked. (The field would
+        // otherwise keep Down to move its cursor.)
         if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
-            _field.hasFocus &&
-            _turns.isNotEmpty) {
-          if (event is KeyDownEvent) _answers.requestFocus();
+            _field.hasFocus) {
+          if (event is KeyDownEvent) {
+            if (_turns.isNotEmpty) {
+              _answers.requestFocus();
+            } else {
+              _field.focusInDirection(TraversalDirection.down);
+            }
+          }
           return KeyEventResult.handled;
         }
         if (!ok || !_field.hasFocus) return KeyEventResult.ignored;
@@ -340,7 +358,7 @@ class _AskPanelState extends State<_AskPanel> {
         style: const TextStyle(color: Colors.white, fontSize: 18),
         decoration: InputDecoration(
           hintText: _turns.isEmpty
-              ? 'Ask anything about this photo — or use the keyboard’s mic'
+              ? 'Ask anything about this photo'
               : 'Ask a follow-up…',
           hintStyle: TextStyle(
             color: Colors.white.withValues(alpha: 0.45),
@@ -428,7 +446,7 @@ class _AskPanelState extends State<_AskPanel> {
     );
   }
 
-  Widget _noKey() {
+  Widget _noServer() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -436,8 +454,10 @@ class _AskPanelState extends State<_AskPanel> {
         _title(),
         const SizedBox(height: 22),
         Text(
-          'Add a Gemini API key in Settings to ask about photos. You can get '
-          'one free at aistudio.google.com.',
+          'Ask about photos with Gemma running on a computer at home — your '
+          'photos never leave your network. Install Ollama there, run '
+          '“ollama pull ${SettingsController.instance.gemmaModel}”, then add '
+          'the computer’s address in Settings.',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.8),
             fontSize: 18,
@@ -461,18 +481,18 @@ class _AskPanelState extends State<_AskPanel> {
   }
 }
 
-/// What Gemini is being shown — the photo, exactly the zoomed-in part of it,
+/// What Gemma is being shown — the photo, exactly the zoomed-in part of it,
 /// or a video's poster frame — as a small preview above the field.
-class _GeminiInput extends StatefulWidget {
-  const _GeminiInput({required this.entry, this.focus});
+class _GemmaInput extends StatefulWidget {
+  const _GemmaInput({required this.entry, this.focus});
   final MediaEntry entry;
   final Rect? focus;
 
   @override
-  State<_GeminiInput> createState() => _GeminiInputState();
+  State<_GemmaInput> createState() => _GemmaInputState();
 }
 
-class _GeminiInputState extends State<_GeminiInput> {
+class _GemmaInputState extends State<_GemmaInput> {
   File? _file;
   Size? _size; // pixel size of _file
   ImageStream? _stream;
@@ -538,7 +558,7 @@ class _GeminiInputState extends State<_GeminiInput> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          widget.focus != null ? 'Gemini sees (zoomed in)' : 'Gemini sees',
+          widget.focus != null ? 'Gemma sees (zoomed in)' : 'Gemma sees',
           style: TextStyle(
             color: Colors.white.withValues(alpha: 0.5),
             fontSize: 12,
@@ -575,7 +595,7 @@ class _GeminiInputState extends State<_GeminiInput> {
   }
 }
 
-/// "thinking..." with a light sweeping across it while Gemini answers.
+/// "thinking..." with a light sweeping across it while Gemma answers.
 class _Thinking extends StatelessWidget {
   const _Thinking();
 

@@ -311,7 +311,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> {
 
   void _next() => _go(1);
 
-  /// Pauses (if needed) and asks Gemini about the current slide — the
+  /// Pauses (if needed) and asks Gemma about the current slide — the
   /// zoomed-in part of it, if zoomed.
   Future<void> _ask() async {
     if (!_paused) _togglePause();
@@ -325,7 +325,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> {
 
   /// Remote keys on the slide itself. Playing: OK pauses, Left/Right change
   /// slides. Paused on a photo it behaves like the viewer: OK steps zoom,
-  /// arrows pan while zoomed. Up goes to the top-bar chips, Down asks Gemini.
+  /// arrows pan while zoomed. Up goes to the top-bar chips, Down asks Gemma.
   static final _okKeys = {
     LogicalKeyboardKey.enter,
     LogicalKeyboardKey.numpadEnter,
@@ -646,7 +646,8 @@ class _GlassChipState extends State<_GlassChip> {
           height: 38,
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
-            color: _hover ? Colors.white : Colors.white.withValues(alpha: 0.14),
+            // Dark when idle so the label reads over bright photos.
+            color: _hover ? Colors.white : Colors.black.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(19),
             border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
           ),
